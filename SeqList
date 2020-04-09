@@ -1,0 +1,203 @@
+//SeqList.h  顺序表的相关函数声明
+#pragma once
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+
+typedef int SLDataType;
+typedef struct SeqList
+{
+	SLDataType* a;
+	size_t size;//数据个数
+	size_t capacity;//unsigned int 容量
+}SeqList;
+
+//对数据的管理 增删查改
+void SeqListInit(SeqList* ps);//初始化
+void SeqListDestory(SeqList* ps);//清零
+
+void SeqListPrint(SeqList* ps);
+void SeqListPushBack(SeqList* ps, SLDataType x);//尾插
+void SeqListPushFront(SeqList* ps, SLDataType x);//头插
+void SeqListPopFront(SeqList* ps);//头删
+void SeqListPopBack(SeqList* ps);//尾删
+
+int SeqListFind(SeqList* ps, SLDataType x);//查找
+void SeqListInsert(SeqList* ps, size_t pos, SLDataType x);//在pos位置插入x
+void SeqListErase(SeqList* ps, size_t pos);//删除pos位置的值
+void SeqListErase(SeqList* ps, SLDataType x);
+
+//SeqList.c  顺序表函数功能的实现
+#include "SeqList.h"
+
+void SeqListInit(SeqList *ps)
+{
+	assert(ps);
+
+	ps->a = NULL;
+	ps->size = 0;
+	ps->capacity = 0;
+}
+void SeqListDestory(SeqList *ps)
+{
+	assert(ps);
+	free(ps->a);
+	ps->a = NULL;
+	ps->size = ps->capacity = 0;
+}
+
+void SeqListPrint(SeqList* ps)
+{
+	assert(ps);
+
+	for (size_t i = 0; i < ps->size; ++i)
+	{
+		printf("%d ", ps->a[i]);
+	}
+	printf("\n");
+}
+
+void CheckCapacity(SeqList* ps)//增容检查
+{
+	if (ps->size == ps->capacity)
+	{
+		size_t newcapacity = ps->capacity == 0 ? 4 : ps->capacity * 2;
+		ps->a = (SLDataType*)realloc(ps->a, newcapacity*sizeof(SLDataType));//当第一次处理数据时，考虑越界，越界的时候在使用数据时不会检查出来，在使用后才检查
+		ps->capacity = newcapacity;
+	}
+}
+
+void SeqListPushBack(SeqList* ps, SLDataType x)
+{
+	assert(ps);
+	CheckCapacity(ps);
+
+	ps->a[ps->size] = x;
+	ps->size++;
+
+	//SeqListInsert(ps, ps->size, x);//直接变为尾插
+}
+
+void SeqListPushFront(SeqList* ps, SLDataType x)//头插
+{
+	assert(ps);
+	CheckCapacity(ps);
+	size_t end = ps->size;
+	while (end > 0)
+	{
+		ps->a[end] = ps->a[end - 1];//向后移动
+		--end;
+	}
+	ps->a[0] = x;
+	++ps->size;
+
+	//SeqListInsert(ps,0,x);//直接变成头插
+
+}
+void SeqListPopFront(SeqList* ps)//头删
+{
+	assert(ps);
+
+	/*size_t start = 0;
+	while (start < ps->size - 1)
+	{
+		ps->a[start] = ps->a[start + 1];
+		++start;
+	}*/
+
+	//注意起点和终点的位置
+	size_t start = 1;
+	while (start < ps->size)
+	{
+		ps->a[start - 1] = ps->a[start];
+		++start;
+	}
+	--ps->size;
+
+	//SeqListErase(ps,0);//直接变为头删
+}
+
+void SeqListPopBack(SeqList* ps)//尾删
+{
+	assert(ps);
+
+	//ps->a[ps->size - 1] = 0;
+	ps->size--;
+
+	//SeqListErase(ps,ps->size-1);//
+}
+
+int SeqListFind(SeqList* ps, SLDataType x)//查找 时间复杂度为O(N)
+{
+	for (size_t i = 0; i < ps->size; ++i)
+	{
+		if (ps->a[i] == x){
+			return i;
+		}
+	}
+	return -1;
+}
+
+void SeqListInsert(SeqList* ps, size_t pos, SLDataType x)//在pos位置插入x
+{
+	assert(ps);
+	assert(pos <= ps->size);
+
+	CheckCapacity(ps);
+
+	size_t end = ps->size;
+	while (end > pos)
+	{
+		ps->a[end] = ps->a[end-1];//注意边界条件的控制
+		--end;
+	}
+
+	ps->a[pos] = x;
+	ps->size++;
+
+	/*int end = ps->size - 1;
+	while (end >=(int)pos)
+	{
+		ps->a[end + 1] = ps->a[end];
+		--end;
+	}
+	ps->a[pos] = x;*/
+}
+
+void SeqListErase(SeqList* ps, size_t pos)//删除pos位置的值
+{
+	assert(ps && pos < ps->size);
+
+	size_t start = pos + 1;
+	while (start < ps->size)
+	{
+		ps->a[start - 1] = ps->a[start];
+		++start;
+	}
+
+	/*size_t start = pos;
+	while (start < ps->size - 1)
+	{
+		ps->a[start] = ps->a[start + 1];
+		++start;
+	}*/
+
+	ps->size--;
+
+}
+
+//test.c  实现对函数相关功能的测试
+#include "SeqList.h"
+ 
+void TestSeqList()
+{
+	SeqList s;
+	SeqListInit(&s);
+}
+
+int main()
+{
+	TestSeqList();
+	system("pause");
+	return 0;
+}
